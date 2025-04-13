@@ -1,10 +1,14 @@
-diffusers==0.27.2
-transformers==4.36.2
-opencv-python
-safetensors
-pillow==10.2.0
-einops
+--extra-index-url https://download.pytorch.org/whl/cu121
 torch
-peft
-gradio==3.41.2
-protobuf==3.20
+torchvision
+diffusers==0.33.1
+huggingface-hub==0.30.2
+sentence-transformers==4.0.2
+transformers==4.51.2
+opencv-python
+safetensors==0.5.3
+pillow==11.2.1
+einops==0.8.1
+peft==0.14.0
+gradio==5.25.0
+protobuf==6.30.2

@@ -14,7 +14,12 @@ from transformers import CLIPTextModel, CLIPTokenizer
 from briarmbg import BriaRMBG
 from enum import Enum
 from torch.hub import download_url_to_file
+from datetime import datetime
 
+# Add this after imports
+RESULT_DIR = "./result_img"
+if not os.path.exists(RESULT_DIR):
+    os.makedirs(RESULT_DIR)
 
 # 'stablediffusionapi/realistic-vision-v51'
 # 'runwayml/stable-diffusion-v1-5'
@@ -340,6 +345,13 @@ def process(input_fg, prompt, image_width, image_height, num_samples, seed, step
 def process_relight(input_fg, prompt, image_width, image_height, num_samples, seed, steps, a_prompt, n_prompt, cfg, highres_scale, highres_denoise, lowres_denoise, bg_source):
     input_fg, matting = run_rmbg(input_fg)
     results = process(input_fg, prompt, image_width, image_height, num_samples, seed, steps, a_prompt, n_prompt, cfg, highres_scale, highres_denoise, lowres_denoise, bg_source)
+    
+    # Save results
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    for i, img in enumerate(results):
+        save_path = os.path.join(RESULT_DIR, f"result_{timestamp}_{i}.png")
+        Image.fromarray(img).save(save_path)
+    
     return input_fg, results
 
 
@@ -384,8 +396,8 @@ with block:
     with gr.Row():
         with gr.Column():
             with gr.Row():
-                input_fg = gr.Image(source='upload', type="numpy", label="Image", height=480)
-                output_bg = gr.Image(type="numpy", label="Preprocessed Foreground", height=480)
+                input_fg = gr.Image(sources='upload', label="Image", height=480)
+                output_bg = gr.Image(label="Preprocessed Foreground", height=480)
             prompt = gr.Textbox(label="Prompt")
             bg_source = gr.Radio(choices=[e.value for e in BGSource],
                                  value=BGSource.NONE.value,
@@ -393,6 +405,7 @@ with block:
             example_quick_subjects = gr.Dataset(samples=quick_subjects, label='Subject Quick List', samples_per_page=1000, components=[prompt])
             example_quick_prompts = gr.Dataset(samples=quick_prompts, label='Lighting Quick List', samples_per_page=1000, components=[prompt])
             relight_button = gr.Button(value="Relight")
+            output_path = gr.Textbox(label="Results saved to:", value=os.path.abspath(RESULT_DIR), interactive=False)
 
             with gr.Group():
                 with gr.Row():
